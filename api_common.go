@@ -156,6 +156,7 @@ const (
 	AttrBold Attribute = 1 << (iota + 9)
 	AttrUnderline
 	AttrReverse
+	AttrBright
 )
 
 // Input mode. See SetInputMode function.
@@ -173,6 +174,7 @@ const (
 	Output256
 	Output216
 	OutputGrayscale
+	OutputXterm
 )
 
 // Event type. See Event.Type field.

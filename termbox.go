@@ -102,6 +102,15 @@ func write_sgr_fg(a Attribute) {
 		outbuf.WriteString("\033[38;5;")
 		outbuf.Write(strconv.AppendUint(intbuf, uint64(a-1), 10))
 		outbuf.WriteString("m")
+	case OutputXterm:
+		if a&AttrBright == 0 {
+			outbuf.WriteString("\033[3")
+		} else {
+			outbuf.WriteString("\033[9")
+		}
+		a = a & 0x0F
+		outbuf.Write(strconv.AppendUint(intbuf, uint64(a-1), 10))
+		outbuf.WriteString("m")
 	default:
 		outbuf.WriteString("\033[3")
 		outbuf.Write(strconv.AppendUint(intbuf, uint64(a-1), 10))
@@ -113,6 +122,15 @@ func write_sgr_bg(a Attribute) {
 	switch output_mode {
 	case Output256, Output216, OutputGrayscale:
 		outbuf.WriteString("\033[48;5;")
+		outbuf.Write(strconv.AppendUint(intbuf, uint64(a-1), 10))
+		outbuf.WriteString("m")
+	case OutputXterm:
+		if a&AttrBright == 0 {
+			outbuf.WriteString("\033[4")
+		} else {
+			outbuf.WriteString("\033[10")
+		}
+		a = a & 0x0F
 		outbuf.Write(strconv.AppendUint(intbuf, uint64(a-1), 10))
 		outbuf.WriteString("m")
 	default:
@@ -129,6 +147,23 @@ func write_sgr(fg, bg Attribute) {
 		outbuf.Write(strconv.AppendUint(intbuf, uint64(fg-1), 10))
 		outbuf.WriteString("m")
 		outbuf.WriteString("\033[48;5;")
+		outbuf.Write(strconv.AppendUint(intbuf, uint64(bg-1), 10))
+		outbuf.WriteString("m")
+	case OutputXterm:
+		if fg&AttrBright == 0 {
+			outbuf.WriteString("\033[3")
+		} else {
+			outbuf.WriteString("\033[9")
+		}
+		fg = fg & 0x0F
+		outbuf.Write(strconv.AppendUint(intbuf, uint64(fg-1), 10))
+		outbuf.WriteString("m")
+		if bg&AttrBright == 0 {
+			outbuf.WriteString(";4")
+		} else {
+			outbuf.WriteString(";10")
+		}
+		bg = bg & 0x0F
 		outbuf.Write(strconv.AppendUint(intbuf, uint64(bg-1), 10))
 		outbuf.WriteString("m")
 	default:
@@ -197,6 +232,9 @@ func send_attr(fg, bg Attribute) {
 		if bgcol != ColorDefault {
 			bgcol = grayscale[bgcol]
 		}
+	case OutputXterm:
+		fgcol = fg & (AttrBright | 0x0F)
+		bgcol = bg & (AttrBright | 0x0F)
 	default:
 		fgcol = fg & 0x0F
 		bgcol = bg & 0x0F
